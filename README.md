@@ -1,4 +1,3 @@
-
 This is the project for my client to build full ecommerce website for his furniture website .
 User
 
@@ -93,8 +92,157 @@ CartItem
   │ └── 1:1 Payment
   ├── 1:N Address
   └── 1:N Reviews → Product
-//can be improved while building this is inital idea or concept for this project
-suvidha-store/
+  //can be improved while building this is inital idea or concept for this project
+  suvidha-store/
+
+                          +----------------+
+                          |     USERS      |
+                          +----------------+
+                          | userId (PK)    |
+                          | name           |
+                          | email          |
+                          | password       |
+                          | phone          |
+                          | role           |
+                          +----------------+
+                                 |
+                +-----------------------------+
+                |                             |
+        +---------------+           +----------------+
+        |   ADDRESSES   |           |    WISHLIST    |
+        +---------------+           +----------------+
+        | addressId (PK)|           | wishlistId (PK)|
+        | userId (FK)   |           | userId (FK)    |
+        | fullName      |           | productId (FK) |
+        | phoneNumber   |           +----------------+
+        | addressLine   |
+        | city/state    |
+        | pincode       |
+        | isDefault     |
+        +---------------+
+
+                                 |
+                                 v
+                            +--------+
+                            |  CART  |
+                            +--------+
+                            | cartId (PK)
+                            | userId (FK)
+                            +--------+
+                                 |
+                                 v
+                      +------------------+
+                      |    CART_ITEMS     |
+                      +------------------+
+                      | cartItemId (PK)  |
+                      | cartId (FK)      |
+                      | productId (FK)   |
+                      | quantity         |
+                      +------------------+
+
+          +----------------+          +-------------------+
+          |    PRODUCTS    |<-------->|     REVIEWS       |
+          +----------------+          +-------------------+
+          | productId (PK) |          | reviewId (PK)     |
+          | title          |          | userId (FK)       |
+          | slug           |          | productId (FK)    |
+          | description    |          | rating (1–5)      |
+          | basePrice      |          | comment           |
+          | categoryId (FK)|          | createdAt         |
+          | createdBy (FK) |          +-------------------+
+          | images []      |
+          +----------------+
+                 |
+                 v
+          +----------------+
+          |   CATEGORIES   |
+          +----------------+
+          | categoryId (PK)|
+          | name           |
+          | description    |
+          +----------------+
+
+          +----------------+
+          |     STOCK      |
+          +----------------+
+          | productId (PK) |
+          | quantity       |
+          | updatedAt      |
+          +----------------+
+
+          +----------------+
+          |    ORDERS      |
+          +----------------+
+          | orderId (PK)   |
+          | userId (FK)    |
+          | addressId (FK) |
+          | totalAmount    |
+          | couponCode     |
+          | discountAmount |
+          | paymentStatus  |
+          | orderStatus    |
+          | paymentMethod  |
+          | orderedAt      |
+          | deliveredAt    |
+          +----------------+
+                 |
+                 v
+          +-------------------+
+          |   ORDER_ITEMS     |
+          +-------------------+
+          | orderItemId (PK)  |
+          | orderId (FK)      |
+          | productId (FK)    |
+          | quantity          |
+          | priceAtOrderTime  |
+          +-------------------+
+
+          +----------------+
+          |    COUPONS     |
+          +----------------+
+          | couponId (PK)  |
+          | code           |
+          | discountType   |
+          | value          |
+          | minAmount      |
+          | expiryDate     |
+          | usedBy []      |
+          +----------------+
+
+          +----------------+
+          |     SALES      |
+          +----------------+
+          | saleId (PK)    |
+          | name           |
+          | type           |
+          | value          |
+          | discountType   |
+          | startDate      |
+          | endDate        |
+          | isActive       |
+          +----------------+
+                 |
+                 v
+          +-------------------+
+          |   SALE_TARGETS    |
+          +-------------------+
+          | targetId (PK)     |
+          | saleId (FK)       |
+          | productId (FK)    |
+          | categoryId (FK)   |
+          +-------------------+
+
+          +----------------------+
+          |   RETURN_REQUESTS    |
+          +----------------------+
+          | returnId (PK)        |
+          | orderId (FK)         |
+          | reason               |
+          | status               |
+          | requestedAt          |
+          | resolvedAt           |
+          +----------------------+
+
 ├── src/
 │ ├── app/
 │ │ ├── layout.tsx ← Global layout

@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.6.1",
     "mongoose": "^8.15.2",
     "next": "15.3.3",
     "react": "^19.0.0",
