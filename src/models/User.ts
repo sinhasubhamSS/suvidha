@@ -5,7 +5,6 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
   avatar?: string;
   refreshToken?: string;
   createdAt: Date;
@@ -26,11 +25,6 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: [true, "Password is required"],
-      select: false,
-    },
-    confirmPassword: {
-      type: String,
-      required: [true, "ConfirmPassword is required"],
       select: false,
     },
     avatar: {

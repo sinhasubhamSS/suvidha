@@ -2,7 +2,8 @@ import cloudinary from "@/lib/Cloudinary";
 import { dbConnect } from "@/lib/dbConnect";
 import User from "@/models/User";
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
+import { generateTokens } from "@/lib/generateTokens";
 
 export const registerUser = async (req: NextRequest) => {
   await dbConnect();
@@ -82,6 +83,122 @@ export const registerUser = async (req: NextRequest) => {
     );
   } catch (error) {
     console.error("Register Error:", error);
+    return NextResponse.json(
+      { message: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+};
+export const loginUser = async (req: NextRequest) => {
+  await dbConnect();
+
+  try {
+    const { email, password } = await req.json();
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: "Email and password are required" },
+        { status: 400 }
+      );
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return NextResponse.json(
+        { message: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return NextResponse.json(
+        { message: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user._id.toString());
+
+    // Save refreshToken in DB
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        },
+        accessToken,
+      },
+      { status: 200 }
+    );
+
+    response.cookies.set("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 15 * 60, // 15 minutes
+    });
+
+    response.cookies.set("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Login Error:", error);
+    return NextResponse.json(
+      { message: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+};
+export const logoutUser = async (req: NextRequest) => {
+  await dbConnect();
+
+  try {
+    const refreshToken = req.cookies.get("refreshToken")?.value;
+
+    if (!refreshToken) {
+      return NextResponse.json({ message: "No token found" }, { status: 400 });
+    }
+
+    const user = await User.findOne({ refreshToken });
+    if (user) {
+      user.refreshToken = undefined;
+      await user.save();
+    }
+
+    const response = NextResponse.json({
+      success: true,
+      message: "Logged out",
+    });
+
+    response.cookies.set("accessToken", "", {
+      httpOnly: true,
+      path: "/",
+      maxAge: 0,
+    });
+
+    response.cookies.set("refreshToken", "", {
+      httpOnly: true,
+      path: "/",
+      maxAge: 0,
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Logout Error:", error);
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 500 }
